@@ -1,8 +1,11 @@
 import app from "./app.js";
 import { connectDB } from "./config/db.js";
 import dotenv from "dotenv";
+import fs from "fs";
 
 dotenv.config();
+
+
 
 // Connect to MongoDB
 connectDB();
