@@ -1,13 +1,17 @@
 import app from "./app.js";
 import { connectDB } from "./config/db.js";
+import dotenv from "dotenv";
 
-
-const PORT = process.env.PORT || 5000;
+dotenv.config();
 
 // Connect to MongoDB
 connectDB();
 
-// Start the server
-app.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`);
-});
+if (process.env.NODE_ENV !== "production") {
+  const PORT = process.env.PORT || 5000;
+  app.listen(PORT, () => {
+    console.log(`Server running on http://localhost:${PORT}`);
+  });
+}
+
+export default app; // This is what Vercel uses
