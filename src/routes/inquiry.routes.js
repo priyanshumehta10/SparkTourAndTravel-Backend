@@ -6,7 +6,7 @@ import adminMiddleware from "../middlewares/admin.middleware.js";
 const router = express.Router();
 
 router.post("/", createInquiry);
-router.get("/",authMiddleware, adminMiddleware, getInquiries);
-router.delete("/:id",authMiddleware, adminMiddleware, deleteInquiry);
+router.get("/admin/",authMiddleware, adminMiddleware, getInquiries);
+router.delete("/admin/:id",authMiddleware, adminMiddleware, deleteInquiry);
 
 export default router;
