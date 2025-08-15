@@ -3,7 +3,7 @@ import dotenv from "dotenv";
 import cookieParser from "cookie-parser";
 import authRoutes from "./routes/auth.routes.js";
 import packageRoutes from "./routes/package.routes.js";
-// import inquiryRoutes from "./routes/inquiry.routes.js";
+import inquiryRoutes from "./routes/inquiry.routes.js";
 // import adminRoutes from "./routes/admin.routes.js";
 
 dotenv.config();
@@ -15,7 +15,7 @@ app.use(cookieParser());
 // Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/packages", packageRoutes);
-// app.use("/api/inquiries", inquiryRoutes);
+app.use("/api/inquiries", inquiryRoutes);
 // app.use("/api/admin", adminRoutes);
 
 app.get("/", (req, res) => {
