@@ -14,11 +14,12 @@ const packageSchema = new mongoose.Schema({
   finalPrice: { type: Number },
   duration: { type: String, required: true },
   images: [
-    {
-      data: Buffer,   // binary data of the image
-      contentType: String, // MIME type, e.g., "image/jpeg"
-    },
-  ],
+  {
+    url: { type: String, required: true },
+    public_id: { type: String, required: true },
+  },
+],
+
   itinerary: [itinerarySchema],
   bookingsCount: { type: Number, default: 0 },
   createdBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
