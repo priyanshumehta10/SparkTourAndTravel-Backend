@@ -9,7 +9,6 @@ import getDashboardSummary from "./routes/admin.routes.js";
 import reviewRoutes from "./routes/review.routes.js";
 
 dotenv.config();
-console.log("API Key:", process.env.CLOUDINARY_API_KEY ? "Loaded" : "Missing");
 
 const app = express();
 
