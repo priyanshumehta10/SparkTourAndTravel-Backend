@@ -5,8 +5,11 @@ import cors from "cors";
 import authRoutes from "./routes/auth.routes.js";
 import packageRoutes from "./routes/package.routes.js";
 import inquiryRoutes from "./routes/inquiry.routes.js";
+import getDashboardSummary from "./routes/admin.routes.js";
+import reviewRoutes from "./routes/review.routes.js";
 
 dotenv.config();
+console.log("API Key:", process.env.CLOUDINARY_API_KEY ? "Loaded" : "Missing");
 
 const app = express();
 
@@ -28,6 +31,8 @@ app.use(cookieParser());
 app.use("/api/auth", authRoutes);
 app.use("/api/packages", packageRoutes);
 app.use("/api/inquiries", inquiryRoutes);
+app.use("/api/admin", getDashboardSummary);
+app.use("/api/review",reviewRoutes)
 
 app.get("/", (req, res) => {
   res.send("Tour & Travel API is running...");

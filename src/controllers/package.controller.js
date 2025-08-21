@@ -1,6 +1,7 @@
 import Package from "../models/Package.js";
+import cloudinary from "../config/cloudinary.js";
 
-// Create a new package (admin only)
+
 export const createPackage = async (req, res) => {
   try {
     const { title, description, price, discount, duration, itinerary } = req.body;
@@ -14,10 +15,20 @@ export const createPackage = async (req, res) => {
       if (req.files.length > 5)
         return res.status(400).json({ message: "Maximum 5 images allowed" });
 
-      images = req.files.map((file) => ({
-        data: file.buffer,          // multer memory storage
-        contentType: file.mimetype,
-      }));
+      const uploadToCloudinary = (file) => {
+        return new Promise((resolve, reject) => {
+          const stream = cloudinary.uploader.upload_stream(
+            { folder: "packages", timeout: 60000 }, // 60 seconds timeout
+            (error, result) => {
+              if (error) return reject(error);
+              resolve({ url: result.secure_url, public_id: result.public_id });
+            }
+          );
+          stream.end(file.buffer);
+        });
+      };
+
+      images = await Promise.all(req.files.map((file) => uploadToCloudinary(file)));
     }
 
     const pkg = new Package({
@@ -26,7 +37,7 @@ export const createPackage = async (req, res) => {
       price,
       discount,
       duration,
-      images,
+      images, // only URLs + public_ids
       itinerary,
       createdBy: req.user.id,
     });
@@ -34,11 +45,10 @@ export const createPackage = async (req, res) => {
     await pkg.save();
     res.status(201).json(pkg);
   } catch (err) {
+    console.error(err);
     res.status(500).json({ message: err.message });
   }
 };
-
-
 
 // Get all packages
 export const getPackages = async (req, res) => {
@@ -83,23 +93,35 @@ export const updatePackage = async (req, res) => {
     // Parse itinerary if sent as string
     if (itinerary) {
       try {
-        updateData.itinerary = typeof itinerary === "string" ? JSON.parse(itinerary) : itinerary;
+        updateData.itinerary =
+          typeof itinerary === "string" ? JSON.parse(itinerary) : itinerary;
       } catch {
         return res.status(400).json({ message: "Invalid itinerary format" });
       }
     }
 
-    // Handle uploaded images (store in DB as buffer or base64)
+    // Handle uploaded images -> Cloudinary
     if (req.files && req.files.length > 0) {
       if (req.files.length > 5) {
         return res.status(400).json({ message: "Maximum 5 images allowed" });
       }
-      // Save images as buffer in DB
-      updateData.images = req.files.map(file => ({
-        data: file.buffer,
-        contentType: file.mimetype,
-        filename: file.originalname
-      }));
+
+      // helper to upload to Cloudinary
+      const uploadToCloudinary = (file) => {
+        return new Promise((resolve, reject) => {
+          const stream = cloudinary.uploader.upload_stream(
+            { folder: "packages", timeout: 60000 },
+            (error, result) => {
+              if (error) reject(error);
+              else resolve({ url: result.secure_url, public_id: result.public_id });
+            }
+          );
+          stream.end(file.buffer);
+        });
+      };
+
+      const images = await Promise.all(req.files.map((file) => uploadToCloudinary(file)));
+      updateData.images = images; // store only url + public_id
     }
 
     const pkg = await Package.findByIdAndUpdate(
