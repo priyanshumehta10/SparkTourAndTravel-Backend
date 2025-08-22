@@ -4,7 +4,7 @@ import cloudinary from "../config/cloudinary.js";
 
 export const createPackage = async (req, res) => {
   try {
-    const { title, description, price, discount, duration, itinerary } = req.body;
+    const { title, description, price, discount, duration, itinerary, Hot } = req.body;
 
     if (!title || !price || !duration) {
       return res.status(400).json({ message: "Title, price, and duration are required" });
@@ -37,7 +37,8 @@ export const createPackage = async (req, res) => {
       price,
       discount,
       duration,
-      images, // only URLs + public_ids
+      images, 
+      Hot,
       itinerary,
       createdBy: req.user.id,
     });
@@ -74,7 +75,7 @@ export const getPackage = async (req, res) => {
 
 export const updatePackage = async (req, res) => {
   try {
-    const { title, description, price, discount, duration, itinerary } = req.body;
+    const { title, description, price, discount, duration, itinerary, existingImages,Hot } = req.body;
     const updateData = {};
 
     if (title) updateData.title = title;
@@ -82,6 +83,7 @@ export const updatePackage = async (req, res) => {
     if (price) updateData.price = Number(price);
     if (discount) updateData.discount = Number(discount);
     if (duration) updateData.duration = duration;
+    if (Hot !== undefined) updateData.Hot = Hot;
 
     // Recalculate finalPrice
     if (price || discount) {
@@ -100,13 +102,33 @@ export const updatePackage = async (req, res) => {
       }
     }
 
-    // Handle uploaded images -> Cloudinary
+    // ✅ Start with existing images (must be array of {url, public_id})
+    let images = [];
+    if (existingImages) {
+      try {
+        images =
+          typeof existingImages === "string"
+            ? JSON.parse(existingImages) // if sent as stringified JSON
+            : existingImages;
+
+        if (!Array.isArray(images)) {
+          return res.status(400).json({ message: "existingImages must be an array" });
+        }
+
+        // ✅ Keep only valid objects with both url & public_id
+        images = images.filter(img => img.url && img.public_id);
+
+      } catch {
+        return res.status(400).json({ message: "Invalid existingImages format" });
+      }
+    }
+
+    // ✅ Handle new uploads
     if (req.files && req.files.length > 0) {
-      if (req.files.length > 5) {
+      if (req.files.length + images.length > 5) {
         return res.status(400).json({ message: "Maximum 5 images allowed" });
       }
 
-      // helper to upload to Cloudinary
       const uploadToCloudinary = (file) => {
         return new Promise((resolve, reject) => {
           const stream = cloudinary.uploader.upload_stream(
@@ -120,8 +142,12 @@ export const updatePackage = async (req, res) => {
         });
       };
 
-      const images = await Promise.all(req.files.map((file) => uploadToCloudinary(file)));
-      updateData.images = images; // store only url + public_id
+      const uploaded = await Promise.all(req.files.map((file) => uploadToCloudinary(file)));
+      images = [...images, ...uploaded];
+    }
+
+    if (images.length > 0) {
+      updateData.images = images; // ✅ always [{url, public_id}]
     }
 
     const pkg = await Package.findByIdAndUpdate(
@@ -138,6 +164,8 @@ export const updatePackage = async (req, res) => {
     res.status(500).json({ message: "Server error while updating package" });
   }
 };
+
+
 
 
 

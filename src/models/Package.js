@@ -19,7 +19,7 @@ const packageSchema = new mongoose.Schema({
     public_id: { type: String, required: true },
   },
 ],
-
+  Hot:{type: Boolean, default: false},
   itinerary: [itinerarySchema],
   bookingsCount: { type: Number, default: 0 },
   createdBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
