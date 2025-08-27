@@ -18,6 +18,11 @@ const reviewSchema = new mongoose.Schema(
       max: 5,
       required: true,
     },
+    image: {
+      url: { type: String },
+      public_id: { type: String },
+    },
+
   },
   { timestamps: true }
 );

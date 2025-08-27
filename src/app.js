@@ -7,6 +7,7 @@ import packageRoutes from "./routes/package.routes.js";
 import inquiryRoutes from "./routes/inquiry.routes.js";
 import getDashboardSummary from "./routes/admin.routes.js";
 import reviewRoutes from "./routes/review.routes.js";
+import PackageGroup from "./routes/packageGroup.routes.js";
 
 dotenv.config();
 
@@ -31,7 +32,8 @@ app.use("/api/auth", authRoutes);
 app.use("/api/packages", packageRoutes);
 app.use("/api/inquiries", inquiryRoutes);
 app.use("/api/admin", getDashboardSummary);
-app.use("/api/review",reviewRoutes)
+app.use("/api/review",reviewRoutes);
+app.use("/api/packageGroup",PackageGroup);
 
 app.get("/", (req, res) => {
   res.send("Tour & Travel API is running...");

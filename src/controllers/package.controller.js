@@ -1,10 +1,11 @@
 import Package from "../models/Package.js";
 import cloudinary from "../config/cloudinary.js";
+import { PACKAGE_TAGS } from "../models/Package.js";
 
 
 export const createPackage = async (req, res) => {
   try {
-    const { title, description, price, discount, duration, itinerary, Hot } = req.body;
+    const { title, description, price, discount, duration, itinerary, Hot, groupId, tags } = req.body;
 
     if (!title || !price || !duration) {
       return res.status(400).json({ message: "Title, price, and duration are required" });
@@ -18,7 +19,7 @@ export const createPackage = async (req, res) => {
       const uploadToCloudinary = (file) => {
         return new Promise((resolve, reject) => {
           const stream = cloudinary.uploader.upload_stream(
-            { folder: "packages", timeout: 60000 }, // 60 seconds timeout
+            { folder: "packages", timeout: 60000 },
             (error, result) => {
               if (error) return reject(error);
               resolve({ url: result.secure_url, public_id: result.public_id });
@@ -37,10 +38,12 @@ export const createPackage = async (req, res) => {
       price,
       discount,
       duration,
-      images, 
+      images,
       Hot,
       itinerary,
       createdBy: req.user.id,
+      group: groupId || null,
+      tags: tags ? (Array.isArray(tags) ? tags : JSON.parse(tags)) : [], // ✅ tags added
     });
 
     await pkg.save();
@@ -50,6 +53,7 @@ export const createPackage = async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 };
+
 
 // Get all packages
 export const getPackages = async (req, res) => {
@@ -75,7 +79,7 @@ export const getPackage = async (req, res) => {
 
 export const updatePackage = async (req, res) => {
   try {
-    const { title, description, price, discount, duration, itinerary, existingImages,Hot } = req.body;
+    const { title, description, price, discount, duration, itinerary, existingImages, Hot, groupId } = req.body;
     const updateData = {};
 
     if (title) updateData.title = title;
@@ -84,13 +88,22 @@ export const updatePackage = async (req, res) => {
     if (discount) updateData.discount = Number(discount);
     if (duration) updateData.duration = duration;
     if (Hot !== undefined) updateData.Hot = Hot;
-
+    if (groupId !== undefined) updateData.group = groupId;
     // Recalculate finalPrice
     if (price || discount) {
       const newPrice = Number(price) || 0;
       const newDiscount = Number(discount) || 0;
       updateData.finalPrice = newPrice - (newPrice * newDiscount) / 100;
     }
+    if (req.body.tags) {
+      try {
+        updateData.tags =
+          typeof req.body.tags === "string" ? JSON.parse(req.body.tags) : req.body.tags;
+      } catch {
+        return res.status(400).json({ message: "Invalid tags format" });
+      }
+    }
+
 
     // Parse itinerary if sent as string
     if (itinerary) {
@@ -167,6 +180,14 @@ export const updatePackage = async (req, res) => {
 
 
 
+export const getAllTags = async (req, res) => {
+  try {
+    res.json(PACKAGE_TAGS);
+  } catch (err) {
+    res.status(500).json({ message: "Error fetching tags" });
+  }
+
+};
 
 
 // Delete package (admin only)
@@ -180,3 +201,22 @@ export const deletePackage = async (req, res) => {
   }
 };
 
+
+export const getPackagesByGroup = async (req, res) => {
+  try {
+    const groupId = req.params.groupId;
+
+    if (!groupId) return res.status(400).json({ message: "Package group ID is required" });
+
+    const packages = await Package.find({ group: groupId }).select("-__v");
+
+    if (!packages || packages.length === 0) {
+      return res.status(404).json({ message: "No packages found for this group" });
+    }
+
+    res.json(packages);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server error while fetching packages by group" });
+  }
+};
