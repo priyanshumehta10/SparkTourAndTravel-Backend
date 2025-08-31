@@ -49,12 +49,17 @@ export const createReview = async (req, res) => {
 // ✅ Get All Reviews
 export const getReviews = async (req, res) => {
   try {
-    const reviews = await Review.find().sort({ createdAt: -1 }); // latest first
+    const limit = parseInt(req.query.limit) || 10; // default 10, can pass ?limit=5
+    const reviews = await Review.find()
+      .sort({ createdAt: -1 }) // latest first
+      .limit(limit);
+
     res.status(200).json({ success: true, reviews });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
 };
+
 
 // ✅ Delete Review
 export const deleteReview = async (req, res) => {

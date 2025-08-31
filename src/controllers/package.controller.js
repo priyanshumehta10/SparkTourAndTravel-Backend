@@ -54,16 +54,27 @@ export const createPackage = async (req, res) => {
   }
 };
 
-
 // Get all packages
 export const getPackages = async (req, res) => {
   try {
-    const packages = await Package.find().select('-__v');
+    const { limit, tag } = req.query;
+
+    const query = {};
+    if (tag) {
+      query.tags = tag; // filter by tag if provided
+    }
+
+    const packages = await Package.find(query)
+      .select('-__v')
+      .sort({ Hot: -1, createdAt: -1 }) // Hot ones first, then newest
+      .limit(parseInt(limit) || 10);
+
     res.json(packages);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
 };
+
 
 // Get single package
 export const getPackage = async (req, res) => {
