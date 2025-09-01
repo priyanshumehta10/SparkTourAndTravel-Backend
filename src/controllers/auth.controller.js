@@ -51,9 +51,14 @@ export const login = async (req, res) => {
     res.cookie("token", token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
-      maxAge: 24 * 60 * 60 * 1000,
-      sameSite:process.env.NODE_ENV === "production" ? "none" : "strict",
+      maxAge: 24 * 60 * 60 * 1000, // 1 day
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
+      path: "/",
+      ...(process.env.NODE_ENV === "production" && {
+        domain: ".spark-tour-and-travel-frontend.vercel.app",
+      }),
     });
+
 
     res.status(200).json({
       message: "Login successful",
@@ -225,15 +230,15 @@ export const resetPassword = async (req, res) => {
 export const logout = (req, res) => {
   try {
     // Clear the JWT cookie
-res.clearCookie("token", {
-  httpOnly: true,
-  secure: process.env.NODE_ENV === "production",
-  sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
-  path: "/",
-  ...(process.env.NODE_ENV === "production" && {
-    domain: ".spark-tour-and-travel-frontend.vercel.app", // only in production
-  }),
-});
+    res.clearCookie("token", {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+      path: "/",
+      ...(process.env.NODE_ENV === "production" && {
+        domain: ".spark-tour-and-travel-frontend.vercel.app", // only in production
+      }),
+    });
 
     res.status(200).json({ message: "Logout successful" });
   } catch (err) {
