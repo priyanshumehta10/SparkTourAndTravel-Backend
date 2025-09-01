@@ -15,7 +15,7 @@ router.get("/admin/users/:id", authMiddleware, adminMiddleware, getUserById);
 router.delete("/admin/users/:id", authMiddleware, adminMiddleware, deleteUser);
 router.post("/forgot-password", forgotPassword);
 router.post("/reset-password", resetPassword);
-router.post("/logout", logout)
+router.post("/logout",authMiddleware, logout)
 router.get("/me", authMiddleware, async (req, res) => {
   try {
     const user = await User.findById(req.user.id).select("-password"); // exclude password

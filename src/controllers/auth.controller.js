@@ -54,9 +54,6 @@ export const login = async (req, res) => {
       maxAge: 24 * 60 * 60 * 1000, // 1 day
       sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
       path: "/",
-      ...(process.env.NODE_ENV === "production" && {
-        domain: ".spark-tour-and-travel-frontend.vercel.app",
-      }),
     });
 
 
@@ -234,10 +231,6 @@ export const logout = (req, res) => {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
-      path: "/",
-      ...(process.env.NODE_ENV === "production" && {
-        domain: ".spark-tour-and-travel-frontend.vercel.app", // only in production
-      }),
     });
 
     res.status(200).json({ message: "Logout successful" });
