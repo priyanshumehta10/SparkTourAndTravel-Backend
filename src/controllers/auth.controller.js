@@ -225,11 +225,15 @@ export const resetPassword = async (req, res) => {
 export const logout = (req, res) => {
   try {
     // Clear the JWT cookie
-    res.clearCookie("token", {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
-    });
+res.clearCookie("token", {
+  httpOnly: true,
+  secure: process.env.NODE_ENV === "production",
+  sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+  path: "/",
+  ...(process.env.NODE_ENV === "production" && {
+    domain: ".spark-tour-and-travel-frontend.vercel.app", // only in production
+  }),
+});
 
     res.status(200).json({ message: "Logout successful" });
   } catch (err) {
