@@ -9,11 +9,17 @@ const TAGS_ENUM = [
   "Budget Friendly Options",
 ];
 
-
 const itinerarySchema = new mongoose.Schema({
   day: { type: Number, required: true },
   title: { type: String, required: true },
   description: { type: String, required: true },
+
+  // Meals & stay
+  breakfast: { type: Boolean, default: false },
+  lunch: { type: Boolean, default: false },
+  dinner: { type: Boolean, default: false },
+  highTea: { type: Boolean, default: false },
+  stay: { type: String, default: "" }, // e.g., "Hotel", "Resort", "Camp"
 });
 
 const packageSchema = new mongoose.Schema({
@@ -29,6 +35,17 @@ const packageSchema = new mongoose.Schema({
       public_id: { type: String, required: true },
     },
   ],
+
+  tourInclusions: { type: String, default: "" },
+  tourExclusions: { type: String, default: "" },
+
+  // NEW: Pricing type
+  pricingType: { 
+    type: String, 
+    enum: ["perPerson", "couple"], 
+    default: "perPerson" 
+  },
+
   group: { type: mongoose.Schema.Types.ObjectId, ref: "PackageGroup", default: null },
   Hot: { type: Boolean, default: false },
   itinerary: [itinerarySchema],
@@ -57,6 +74,6 @@ packageSchema.pre("save", function (next) {
   next();
 });
 
-export const PACKAGE_TAGS = TAGS_ENUM; 
+export const PACKAGE_TAGS = TAGS_ENUM;
 
 export default mongoose.model("Package", packageSchema);
