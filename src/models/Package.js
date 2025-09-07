@@ -61,6 +61,11 @@ const packageSchema = new mongoose.Schema({
   createdAt: { type: Date, default: Date.now },
 });
 
+// Add indexes to improve query speed
+packageSchema.index({ Hot: -1, createdAt: -1 }); 
+packageSchema.index({ tags: 1 });
+
+
 function arrayLimit(val) {
   return val.length <= 5;
 }

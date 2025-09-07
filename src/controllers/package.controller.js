@@ -92,15 +92,17 @@ export const getPackages = async (req, res) => {
     }
 
     const packages = await Package.find(query)
-      .select('-__v')
-      .sort({ Hot: -1, createdAt: -1 }) // Hot ones first, then newest
-      .limit(parseInt(limit) || 10);
+      .select("title price finalPrice duration images tags Hot createdAt") // only required fields
+      .sort({ Hot: -1, createdAt: -1 })
+      .limit(parseInt(limit) || 10)
+      .lean(); // faster, returns plain JS objects
 
     res.json(packages);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
 };
+
 
 
 // Get single package
