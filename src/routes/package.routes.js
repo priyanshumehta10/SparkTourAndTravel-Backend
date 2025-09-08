@@ -22,7 +22,7 @@ router.put("/admin/:id", authMiddleware, adminMiddleware, upload.array("images",
 router.get("/", getPackages);
 router.get("/:id", authMiddleware, getPackage);
 router.delete("/admin/:id", authMiddleware, adminMiddleware, deletePackage);
-router.get("/group/:id", authMiddleware, adminMiddleware, getPackagesByGroup);
+router.get("/group/:id", getPackagesByGroup);
 router.get("/tags/all", authMiddleware, getAllTags);
 
 export default router;

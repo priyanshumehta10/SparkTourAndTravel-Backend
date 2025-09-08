@@ -27,6 +27,8 @@ const packageSchema = new mongoose.Schema({
   description: { type: String },
   price: { type: Number, required: true },
   discount: { type: Number, default: 0 },
+  specialDiscount:{type:Number,default:0},
+  finalSpecialPrice:{type:Number},
   finalPrice: { type: Number },
   duration: { type: String, required: true },
   images: [
@@ -75,6 +77,11 @@ packageSchema.pre("save", function (next) {
     this.finalPrice = this.price - (this.price * this.discount) / 100;
   } else {
     this.finalPrice = this.price;
+  }
+  if (this.specialDiscount > 0) {
+    this.finalSpecialPrice = this.price - (this.price * this.specialDiscount) / 100;
+  } else {
+    this.finalSpecialPrice = this.price;
   }
   next();
 });
