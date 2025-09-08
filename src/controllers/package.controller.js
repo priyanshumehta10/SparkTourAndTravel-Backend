@@ -10,6 +10,7 @@ export const createPackage = async (req, res) => {
       description,
       price,
       discount,
+      specialDiscount,
       duration,
       itinerary,
       Hot,
@@ -59,6 +60,7 @@ export const createPackage = async (req, res) => {
       description,
       price,
       discount,
+      specialDiscount,
       duration,
       images,
       Hot,
@@ -124,6 +126,7 @@ export const updatePackage = async (req, res) => {
       description,
       price,
       discount,
+      specialDiscount,
       duration,
       itinerary,
       existingImages,
@@ -140,6 +143,7 @@ export const updatePackage = async (req, res) => {
     if (description) updateData.description = description;
     if (price) updateData.price = Number(price);
     if (discount) updateData.discount = Number(discount);
+    if (specialDiscount) updateData.specialDiscount = Number(specialDiscount);
     if (duration) updateData.duration = duration;
     if (Hot !== undefined) updateData.Hot = Hot;
     if (groupId !== undefined) updateData.group = groupId;
@@ -160,6 +164,13 @@ export const updatePackage = async (req, res) => {
       const newDiscount = Number(discount) || 0;
       updateData.finalPrice =
         newPrice - (newPrice * newDiscount) / 100;
+    }
+
+        if (specialDiscount) {
+      const newSpecialPrice = Number(price) || 0;
+      const newSpecialDiscount = Number(specialDiscount) || 0;
+      updateData.finalSpecialPrice =
+        newSpecialPrice - (newSpecialPrice * newSpecialDiscount) / 100;
     }
 
     // ✅ Handle tags
@@ -292,7 +303,7 @@ export const deletePackage = async (req, res) => {
 
 export const getPackagesByGroup = async (req, res) => {
   try {
-    const groupId = req.params.groupId;
+    const groupId = req.params.id;
 
     if (!groupId) return res.status(400).json({ message: "Package group ID is required" });
 
