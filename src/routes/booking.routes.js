@@ -8,10 +8,10 @@ const router = express.Router();
 router.use(authMiddleware);
 
 // Create Razorpay order
-router.post("/create-order", createOrder);
+router.post("/createOrder", createOrder);
 
 // Confirm payment & create booking
-router.post("/confirm-payment", confirmPayment);
+router.post("/confirmPayment", confirmPayment);
 
 // Get all bookings for logged-in user
 router.get("/", getUserBookings);
