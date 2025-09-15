@@ -1,5 +1,5 @@
 import express from "express";
-import { createOrder, confirmPayment, getUserBookings } from "../controllers/booking.controller.js";
+import { createOrder, confirmPayment, getMyBookings, getBookingDetail, payRemaining, getAllBookings } from "../controllers/booking.controller.js";
 import authMiddleware from "../middlewares/auth.middleware.js";
 
 const router = express.Router();
@@ -14,6 +14,13 @@ router.post("/createOrder", createOrder);
 router.post("/confirmPayment", confirmPayment);
 
 // Get all bookings for logged-in user
-router.get("/", getUserBookings);
+router.get("/:id", getMyBookings);
+
+router.get("/bookingDetail", getBookingDetail);
+
+router.get("/remainPayment", payRemaining);
+
+router.get("/admin", getAllBookings);
+
 
 export default router;
