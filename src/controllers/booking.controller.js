@@ -16,8 +16,8 @@ export const createOrder = async (req, res) => {
       contactEmail, 
       contactPhone, 
       amount, 
-      paymentType,   // ✅ added
-      startingDate   // ✅ added
+      paymentType,   
+      startingDate   
     } = req.body;
 
     // ✅ Validation
@@ -31,13 +31,16 @@ export const createOrder = async (req, res) => {
     }
     if (!startingDate) return res.status(400).json({ message: "Starting date is required" });
 
-    if (req.body.paymentType === "50") {
-  totalAmount = totalAmount * 2; // full package value
-}
+    // ✅ Define totalAmount
+    let totalAmount = amount; 
 
+    if (paymentType === "50") {
+      totalAmount = amount * 2; // full package value
+    }
 
     const pkg = await Package.findById(packageId);
     if (!pkg) return res.status(404).json({ message: "Package not found" });
+
     let paidAmount = 0;
 
     // ✅ Create Razorpay order
@@ -49,7 +52,7 @@ export const createOrder = async (req, res) => {
 
     const order = await razorpay.orders.create(options);
 
-    // ✅ Create booking in DB with pending status
+    // ✅ Save booking
     const booking = await Booking.create({
       user: req.user.id,
       package: packageId,
@@ -57,6 +60,7 @@ export const createOrder = async (req, res) => {
       contactEmail,
       contactPhone,
       amount,
+      totalAmount,
       paidAmount,
       paymentType,    
       startingDate,
@@ -81,6 +85,7 @@ export const createOrder = async (req, res) => {
   }
 };
 
+
 // 2️⃣ Confirm payment and update booking
 export const confirmPayment = async (req, res) => {
   try {
@@ -95,6 +100,7 @@ export const confirmPayment = async (req, res) => {
     if (!booking) return res.status(404).json({ message: "Booking not found" });
 
     // (Optional) verify signature from Razorpay here
+      booking.paidAmount = booking.amount
 
     // ✅ Update payment status
     if (paymentType === "50") {
@@ -202,3 +208,4 @@ export const getAllBookings = async (req, res) => {
     res.status(500).json({ success: false, message: err.message });
   }
 };
+

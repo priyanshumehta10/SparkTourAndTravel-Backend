@@ -26,12 +26,13 @@ const bookingSchema = new mongoose.Schema({
 
   amount: { type: Number, required: true },
 
-  // 👇 New fields
+  // 👇 New fields;
+  totalAmount: {type: Number, default: 0},
   paidAmount: { type: Number, default: 0 },
   paymentType: { type: String, enum: ["50", "100"], required: true }, 
   startingDate: { type: Date, required: true },
 
-  paymentStatus: { type: String, enum: ["pending","partial", "paid"], default: "pending" },
+  paymentStatus: { type: String, enum: ["pending","partial", "paid","cancel"], default: "pending" },
   bookedAt: { type: Date, default: Date.now },
 });
 
