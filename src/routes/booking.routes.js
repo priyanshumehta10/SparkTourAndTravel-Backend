@@ -18,7 +18,7 @@ router.get("/:id", getMyBookings);
 
 router.get("/bookingDetail", getBookingDetail);
 
-router.get("/remainPayment", payRemaining);
+router.post("/remainPayment/:id", payRemaining);
 
 router.get("/admin", getAllBookings);
 

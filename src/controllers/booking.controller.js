@@ -73,7 +73,7 @@ export const createOrder = async (req, res) => {
       bookingId: booking._id,
       packageId: booking.package,
       participants: booking.participants,
-      amount: options.amount,
+      amount: amount,
       currency: order.currency,
       contactEmail,
       contactPhone,
@@ -89,34 +89,30 @@ export const createOrder = async (req, res) => {
 // 2️⃣ Confirm payment and update booking
 export const confirmPayment = async (req, res) => {
   try {
-    const { razorpayPaymentId, razorpayOrderId, bookingId, paymentType } = req.body;
+    const { razorpayPaymentId, razorpayOrderId, bookingId, amount } = req.body;
 
-    if (!razorpayPaymentId || !razorpayOrderId || !bookingId || !paymentType) {
+    if (!razorpayPaymentId || !razorpayOrderId || !bookingId || !amount) {
       return res.status(400).json({ message: "Missing required fields" });
     }
 
-    // ✅ Find booking by Mongo _id (your bookingId)
     const booking = await Booking.findById(bookingId);
     if (!booking) return res.status(404).json({ message: "Booking not found" });
 
-    // (Optional) verify signature from Razorpay here
-      booking.paidAmount = booking.amount
+    // ✅ Add payment amount instead of overwriting
+    booking.paidAmount += Number(amount);
 
-    // ✅ Update payment status
-    if (paymentType === "50") {
-      booking.paymentStatus = "partial"; // new status for 50% payment
-    } else if (paymentType === "100") {
-      booking.paymentStatus = "paid"; // full payment
+    // ✅ Update status
+    if (booking.paidAmount >= booking.totalAmount) {
+      booking.paymentStatus = "paid";
     } else {
-      return res.status(400).json({ message: "Invalid paymentType" });
+      booking.paymentStatus = "partial";
     }
 
-    booking.paymentType = paymentType; // save chosen type
     booking.razorpayPaymentId = razorpayPaymentId;
-    booking.razorpayOrderId = razorpayOrderId; 
+    booking.razorpayOrderId = razorpayOrderId;
     await booking.save();
 
-    // ✅ Update package booking count only if fully paid
+    // ✅ If fully paid → increment package booking count
     if (booking.paymentStatus === "paid") {
       const pkg = await Package.findById(booking.package);
       if (pkg) {
@@ -134,14 +130,13 @@ export const confirmPayment = async (req, res) => {
 
 
 
+
 export const getMyBookings = async (req, res) => {
   try {
-        console.log(req.params.id);
 
     const bookings = await Booking.find({ user: req.user.id })
       .populate("package", "title price")
       .sort({ bookedAt: -1 });
-    console.log(bookings);
 
     res.json({ success: true, bookings });
   } catch (err) {
@@ -168,29 +163,47 @@ export const getBookingDetail = async (req, res) => {
 
 
 // PUT /api/bookings/:id/pay
+// PUT /api/bookings/:id/pay
 export const payRemaining = async (req, res) => {
   try {
     const booking = await Booking.findById(req.params.id);
     if (!booking) return res.status(404).json({ message: "Booking not found" });
 
-    if (booking.paymentType !== 50) {
-      return res.status(400).json({ message: "Full payment already done" });
+    if (booking.paymentStatus !== "partial") {
+      return res.status(400).json({ message: "Booking is not in partial payment state" });
     }
 
-    if (booking.paidAmount >= booking.amount) {
+    // ✅ Calculate remaining amount
+    const remainingAmount = booking.totalAmount - booking.paidAmount;
+    if (remainingAmount <= 0) {
       return res.status(400).json({ message: "Booking already fully paid" });
     }
 
-    booking.paidAmount = booking.amount;
-    booking.paymentStatus = "paid";
+    // ✅ Create new Razorpay order for remaining amount
+    const options = {
+      amount: remainingAmount * 100, // INR → paise
+      currency: "INR",
+      receipt: `order_${Date.now()}`,
+    };
+    const order = await razorpay.orders.create(options);
 
+    // Save order ID so we can confirm later
+    booking.razorpayOrderId = order.id;
     await booking.save();
 
-    res.json({ success: true, message: "Remaining payment completed", booking });
+    res.json({
+      success: true,
+      message: "Remaining payment order created",
+      orderId: order.id,
+      amount: remainingAmount,
+      currency: order.currency,
+      bookingId: booking._id,
+    });
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });
   }
 };
+
 
 export const getAllBookings = async (req, res) => {
   try {
