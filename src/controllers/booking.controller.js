@@ -211,6 +211,7 @@ export const getAllBookings = async (req, res) => {
       .populate("user", "name email")             // show user info
       .populate("package", "title price duration") // show package info
       .sort({ bookedAt: -1 });
+console.log(bookings);
 
     res.json({
       success: true,

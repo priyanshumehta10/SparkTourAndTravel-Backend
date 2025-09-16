@@ -1,6 +1,7 @@
 import express from "express";
 import { createOrder, confirmPayment, getMyBookings, getBookingDetail, payRemaining, getAllBookings } from "../controllers/booking.controller.js";
 import authMiddleware from "../middlewares/auth.middleware.js";
+import adminMiddleware from "../middlewares/admin.middleware.js";
 
 const router = express.Router();
 
@@ -20,7 +21,7 @@ router.get("/bookingDetail", getBookingDetail);
 
 router.post("/remainPayment/:id", payRemaining);
 
-router.get("/admin", getAllBookings);
+router.get("/admin",adminMiddleware, getAllBookings);
 
 
 export default router;

@@ -37,6 +37,6 @@ router.put(
 router.get("/", getPackageGroups);
 router.get("/:id",authMiddleware, getPackageGroup);
 router.delete("/admin/:id", authMiddleware, adminMiddleware, deletePackageGroup);
-router.get("/Tag", getPackageGroupsByTag)
+router.post("/Tag",authMiddleware, getPackageGroupsByTag)
 
 export default router;
