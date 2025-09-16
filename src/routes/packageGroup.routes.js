@@ -8,6 +8,7 @@ import {
     getPackageGroup,
     updatePackageGroup,
     deletePackageGroup,
+    getPackageGroupsByTag,
 } from "../controllers/packageGroup.controller.js";
 
 const router = express.Router();
@@ -36,5 +37,6 @@ router.put(
 router.get("/", getPackageGroups);
 router.get("/:id",authMiddleware, getPackageGroup);
 router.delete("/admin/:id", authMiddleware, adminMiddleware, deletePackageGroup);
+router.get("/Tag", getPackageGroupsByTag)
 
 export default router;
