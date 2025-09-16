@@ -4,7 +4,8 @@ import cloudinary from "../config/cloudinary.js";
 
 export const createPackageGroup = async (req, res) => {
   try {
-    const { name, packageIds } = req.body;
+    const { name, packageIds, tags,
+    } = req.body;
 
     if (!name) return res.status(400).json({ message: "Group name is required" });
 
@@ -41,6 +42,8 @@ export const createPackageGroup = async (req, res) => {
       photo,
       packages: validPackages.map(p => p._id),
       createdBy: req.user.id,
+            tags: Array.isArray(tags) ? tags : (typeof tags === "string" ? JSON.parse(tags) : []),
+
     });
 
     await group.save();
@@ -98,6 +101,19 @@ export const updatePackageGroup = async (req, res) => {
       }
     }
 
+        // ✅ Handle tags
+    if (req.body.tags) {
+      try {
+        updateData.tags =
+          typeof req.body.tags === "string"
+            ? JSON.parse(req.body.tags)
+            : req.body.tags;
+      } catch {
+        return res.status(400).json({ message: "Invalid tags format" });
+      }
+    }
+
+
     // ✅ Handle new upload (overwrite photo if new file uploaded)
     if (req.file) {
       const uploadToCloudinary = (file) => {
@@ -120,7 +136,6 @@ export const updatePackageGroup = async (req, res) => {
       updateData.photo = photo; // always {url, public_id}
     }
 
-console.log("id :", req.params.id);
 
     const group = await PackageGroup.findByIdAndUpdate(req.params.id, updateData, {
       new: true,
@@ -145,5 +160,29 @@ export const deletePackageGroup = async (req, res) => {
     res.json({ message: "Package group deleted" });
   } catch (err) {
     res.status(500).json({ message: err.message });
+  }
+};
+
+// Get Package Groups by Tag
+export const getPackageGroupsByTag = async (req, res) => {
+  try {
+    const { tag } = req.body; // 👈 Tag comes from payload
+
+    if (!tag) {
+      return res.status(400).json({ message: "Tag is required" });
+    }
+
+    const groups = await PackageGroup.find({ tags: tag })
+      .populate("packages")
+      .select("-__v");
+
+    if (!groups || groups.length === 0) {
+      return res.status(404).json({ message: `No package groups found for tag: ${tag}` });
+    }
+
+    res.json(groups);
+  } catch (err) {
+    console.error("Error fetching package groups by tag:", err);
+    res.status(500).json({ message: "Server error while fetching package groups by tag" });
   }
 };
