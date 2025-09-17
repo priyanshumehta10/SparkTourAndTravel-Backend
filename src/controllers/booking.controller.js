@@ -128,42 +128,6 @@ export const confirmPayment = async (req, res) => {
 };
 
 
-
-
-
-export const getMyBookings = async (req, res) => {
-  try {
-
-    const bookings = await Booking.find({ user: req.user.id })
-      .populate("package", "title price")
-      .sort({ bookedAt: -1 });
-
-    res.json({ success: true, bookings });
-  } catch (err) {
-    res.status(500).json({ success: false, message: err.message });
-  }
-};
-
-export const getBookingDetail = async (req, res) => {
-  try {
-    console.log(req.params.id);
-    
-    const booking = await Booking.findById(req.params.id)
-      .populate("package", "title price description")
-      .populate("user", "name email");
-    console.log(booking);
-    
-    if (!booking) return res.status(404).json({ message: "Booking not found" });
-
-    res.json({ success: true, booking });
-  } catch (err) {
-    res.status(500).json({ success: false, message: err.message });
-  }
-};
-
-
-// PUT /api/bookings/:id/pay
-// PUT /api/bookings/:id/pay
 export const payRemaining = async (req, res) => {
   try {
     const booking = await Booking.findById(req.params.id);
@@ -199,6 +163,20 @@ export const payRemaining = async (req, res) => {
       currency: order.currency,
       bookingId: booking._id,
     });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+};
+
+export const getMyBookings = async (req, res) => {
+  try {
+
+    const bookings = await Booking.find({ user: req.user.id })
+      .populate("package", "title price")
+      .sort({ bookedAt: -1 });
+
+    res.json({ success: true, bookings,      total: bookings.length,
+ });
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });
   }
