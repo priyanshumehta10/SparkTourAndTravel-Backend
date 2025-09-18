@@ -13,27 +13,34 @@ const bookingSchema = new mongoose.Schema({
   participants: [participantSchema], // multiple participants
 
   // 👇 Contact info (different from participants)
-  contactEmail: { 
-    type: String, 
-    required: true, 
-    match: [/^\S+@\S+\.\S+$/, "Invalid email format"] 
+  contactEmail: {
+    type: String,
+    required: true,
+    match: [/^\S+@\S+\.\S+$/, "Invalid email format"]
   },
-  contactPhone: { 
-    type: String, 
-    required: true, 
-    match: [/^[0-9]{10}$/, "Invalid phone number"] 
+  contactPhone: {
+    type: String,
+    required: true,
+    match: [/^[0-9]{10}$/, "Invalid phone number"]
   },
 
   amount: { type: Number, required: true },
 
   // 👇 New fields;
-  totalAmount: {type: Number, default: 0},
+  totalAmount: { type: Number, default: 0 },
   paidAmount: { type: Number, default: 0 },
-  paymentType: { type: String, enum: ["50", "100"], required: true }, 
+  paymentType: { type: String, enum: ["50", "100"], required: true },
   startingDate: { type: Date, required: true },
 
-  paymentStatus: { type: String, enum: ["pending","partial", "paid","cancel"], default: "pending" },
+  paymentStatus: { type: String, enum: ["pending", "partial", "paid", "cancel"], default: "pending" },
   bookedAt: { type: Date, default: Date.now },
+  cancelRequest: {
+    requested: { type: Boolean, default: false },
+    reason: { type: String },
+    requestedAt: { type: Date },
+    confirmed: { type: Boolean, default: false }, // admin approves/rejects
+    confirmedAt: { type: Date }
+  }
 });
 
 export default mongoose.model("Booking", bookingSchema);

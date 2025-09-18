@@ -201,3 +201,64 @@ console.log(bookings);
   }
 };
 
+export const requestCancelBooking = async (req, res) => {
+  try {
+    const { bookingId, reason } = req.body;
+
+    const booking = await Booking.findById(bookingId);
+    if (!booking) return res.status(404).json({ message: "Booking not found" });
+
+    // Prevent duplicate requests
+    if (booking.cancelRequest.requested) {
+      return res.status(400).json({ message: "Cancellation request already submitted" });
+    }
+
+    booking.cancelRequest = {
+      requested: true,
+      reason,
+      requestedAt: new Date(),
+      confirmed: false
+    };
+
+    await booking.save();
+
+    res.json({ success: true, message: "Cancellation request submitted", booking });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+};
+
+
+export const confirmCancelBooking = async (req, res) => {
+  try {
+    const { bookingId, approve } = req.body; // approve = true/false
+
+    const booking = await Booking.findById(bookingId);
+    if (!booking) return res.status(404).json({ message: "Booking not found" });
+
+    if (!booking.cancelRequest.requested) {
+      return res.status(400).json({ message: "No cancellation request found" });
+    }
+
+    if (approve) {
+      booking.cancelRequest.confirmed = true;
+      booking.cancelRequest.confirmedAt = new Date();
+      booking.paymentStatus = "cancel"; // Mark as cancelled
+    } else {
+      // Reset request if rejected
+      booking.cancelRequest = {
+        requested: false,
+        reason: null,
+        requestedAt: null,
+        confirmed: false,
+        confirmedAt: null
+      };
+    }
+
+    await booking.save();
+
+    res.json({ success: true, message: approve ? "Booking cancelled" : "Cancellation rejected", booking });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+};
