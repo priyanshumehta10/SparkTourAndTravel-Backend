@@ -1,5 +1,5 @@
 import express from "express";
-import { createOrder, confirmPayment, getMyBookings, payRemaining, getAllBookings } from "../controllers/booking.controller.js";
+import { createOrder, confirmPayment, getMyBookings, payRemaining, getAllBookings,requestCancelBooking,confirmCancelBooking } from "../controllers/booking.controller.js";
 import authMiddleware from "../middlewares/auth.middleware.js";
 import adminMiddleware from "../middlewares/admin.middleware.js";
 
@@ -20,6 +20,11 @@ router.get("/:id", getMyBookings);
 router.post("/remainPayment/:id", payRemaining);
 
 router.get("/admin/get", getAllBookings);
+
+router.post("/cancelRequest", requestCancelBooking);
+
+router.post("/cancelConfirm", adminMiddleware, confirmCancelBooking);
+
 
 
 export default router;
