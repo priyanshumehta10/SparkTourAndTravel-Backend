@@ -70,7 +70,6 @@ export const createPackage = async (req, res) => {
       pricingType: pricingType || "perPerson",
       createdBy: req.user.id,
       group: groupId || null,
-      tags: Array.isArray(tags) ? tags : (typeof tags === "string" ? JSON.parse(tags) : []),
     });
 
 
