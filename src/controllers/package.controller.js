@@ -94,7 +94,7 @@ export const getPackages = async (req, res) => {
     }
 
     const packages = await Package.find(query)
-      .select("title price finalPrice duration images tags Hot createdAt") // only required fields
+      .select("title price finalPrice duration images tags Hot createdAt discount") // only required fields
       .sort({ Hot: -1, createdAt: -1 })
       .limit(parseInt(limit) || 10)
       .lean(); // faster, returns plain JS objects
