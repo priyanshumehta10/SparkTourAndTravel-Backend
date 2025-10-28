@@ -22,8 +22,9 @@ export const getDashboardSummary = async (req, res) => {
       Booking.countDocuments({}),
       Booking.aggregate([
         { $match: { paymentStatus: "paid" } },
-        { $group: { _id: null, total: { $sum: "$amount" } } }
+        { $group: { _id: null, total: { $sum: "$paidAmount" } } }
       ]),
+
       Booking.aggregate([
         {
           $group: {
